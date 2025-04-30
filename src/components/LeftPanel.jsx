@@ -26,7 +26,7 @@ function LeftPanel() {
     } = useDeckAPI();
 
     async function newGame() {
-        // TODO: delete all scores
+        // TODO: reset all scores
         
 
         newDeck();
@@ -36,7 +36,7 @@ function LeftPanel() {
         <Segment>
             <Label attached="top" size="big">
                 <Header as='h2' floated="left">Rules of Play</Header>
-                <Button floated="right" secondary onClick={newGame()} disabled={deckID ? (false) : (true)}>New Game</Button>
+                <Button floated="right" secondary onClick={newGame()}>New Game</Button>
             </Label>
             <Header as='h1'></Header>
             <Segment basic>

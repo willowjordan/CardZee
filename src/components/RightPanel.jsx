@@ -32,6 +32,7 @@ function RightPanel() {
             "description": "Score the sum of all cards, regardless of their matches."
         },
     ]
+
     return (
         <Segment>
             <Segment><Checkbox label="Show scored hands" defaultChecked></Checkbox></Segment>
@@ -40,8 +41,6 @@ function RightPanel() {
                 key={index}
                 title={category.title}
                 description={category.description}
-                score={0}
-                cards={undefined}
                 />
             ))}
         </Segment>
