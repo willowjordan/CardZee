@@ -5,13 +5,38 @@ import {
     Button,
     Label,
 } from "semantic-ui-react";
+import useGameState from "../hooks/useGameState";
+import useDeckAPI from "../hooks/useDeckAPI";
+import CardList from "./CardList";
 
 function LeftPanel() {
+    const {
+        deckID, setDeckID,
+        drawsRemaining, setDrawsRemaining,
+        cardsRemaining, setCardsRemaining,
+        drawnCards, setDrawnCards,
+        selectedCards, setSelectedCards,
+        scoreData, updateScore, updateCards,
+    } = useGameState();
+    const {
+        newDeck,
+        getDeckStatus,
+        deleteDeck,
+        drawCards,
+    } = useDeckAPI();
+
+    async function newGame() {
+        // TODO: delete all scores
+        
+
+        newDeck();
+    }
+
     return (
         <Segment>
             <Label attached="top" size="big">
                 <Header as='h2' floated="left">Rules of Play</Header>
-                <Button floated="right" secondary>New Game</Button>
+                <Button floated="right" secondary onClick={newGame()} disabled={deckID ? (false) : (true)}>New Game</Button>
             </Label>
             <Header as='h1'></Header>
             <Segment basic>
@@ -26,20 +51,28 @@ function LeftPanel() {
                     <Header as='h3' floated="left">Drawn Cards</Header>
                 </Segment>
                 <Segment color="blue" inverted>
-                    <Header as='h3' textAlign="center">Draws left: {3}</Header>
+                    <Header as='h3' textAlign="center">Draws left: {drawsRemaining}</Header>
                 </Segment>
                 <Segment color="blue" inverted>
-                    <Button secondary floated="right">Draw Cards</Button>
+                    <Button secondary floated="right" onClick={drawCards(drawnCards.length)} disabled={drawsRemaining > 0 ? (false) : (true)}>Draw Cards</Button>
                 </Segment>
             </SegmentGroup>
-            {/* CardList here */}
-            {/* Selected cards here */}
+            { drawnCards ? (<></>) : (
+                <Segment>
+                    <CardList cards={drawnCards}/>
+                </Segment>
+            )}
+            {/* Selected cards panel */}
             <SegmentGroup horizontal>
                 <Segment color="blue" inverted>
                     <Header as='h3' floated="left">Selected Cards</Header>
                 </Segment>
             </SegmentGroup>
-            {/* CardList here */}
+            { selectedCards ? (<></>) : (
+                <Segment>
+                    <CardList cards={selectedCards}/>
+                </Segment>
+            )}
         </Segment>
     );
 }
