@@ -1,8 +1,15 @@
+import {
+    Segment,
+    Header,
+} from "semantic-ui-react";
+import useGameContext from "../GameContext";
+
 function TotalScore({ value }) {
+    const {totalScore} = useGameContext();
     return (
-        <div className="ui blue inverted right aligned segment">
-            <h1 className="ui header">Total Game Score: {value}</h1>
-        </div>
+        <Segment color="blue" inverted textAlign="right">
+            <Header as="h1">Total Game Score: {totalScore}</Header>
+        </Segment>
     );
 }
 

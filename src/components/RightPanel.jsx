@@ -4,6 +4,7 @@ import {
 } from "semantic-ui-react";
 
 import ScoreCategory from "./ScoreCategory";
+import TotalScore from "./TotalScore";
 
 function RightPanel() {
     let categories = [
@@ -43,7 +44,7 @@ function RightPanel() {
                 description={category.description}
                 />
             ))}
-            {/** TODO: ADD TOTAL SCORE */}
+            <TotalScore></TotalScore>
         </Segment>
     );
 }

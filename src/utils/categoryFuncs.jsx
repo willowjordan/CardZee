@@ -50,10 +50,14 @@ export function checkTwoPair(cards) {
     let pairs = 0;
     for (let i = 0; i < cards.length - 1; i++)
     {
-        if (cards[i].intValue == cards[i+1].intValue)
+        console.log(i);
+        if (cards[i].intValue === cards[i+1].intValue)
+        {
             pairs++;
             i++; // skip next card since it's part of this pair
+        }
     }
+    console.log("Pairs: " + pairs)
     return pairs == 2;
 }
 

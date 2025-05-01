@@ -15,72 +15,15 @@ function LeftPanel() {
         cardsRemaining, setCardsRemaining,
         drawnCards, setDrawnCards,
         selectedCards, setSelectedCards,
-        scoreData, updateScore, updateCards,
+        scoreData, updateScore, updateCards, resetScoreData,
+        newDeck, drawCards,
     } = useGameContext();
 
-    async function newDeck() {
-        const deckResponse = await fetch('https://cards.soward.net/deck/newDeck');
-        // Trap an error at the HTTP level.
-        if (!deckResponse.ok) {
-            alert('Error fetching new deck: ' + deckResponse.error);
-            return;
-        }
-        let deckJson = "";
-        // Use 'try' to catch errors in the decoded or from the API itself.
-        try {
-            deckJson = await deckResponse.json();
-        } catch (error) {
-            alert(`Error fetching Deck: ${error}<br>${deckResponse.body}`);
-            return;
-        }
-        if (deckJson.success != true) {
-            alert(`Error fetching Deck. Status: ${deckJson.status} Message: ${deckJson.message}`);
-            return;
-        }
-        setDeckID(deckJson.deckID);
-        localStorage.setItem("cardsApiDeckID", JSON.stringify(deckJson.deckID));
-        // We could rely on useEffect here, but we can save an API call by setting it directly.
-        setCardsRemaining(deckJson.cardsRemaining);
-
-        // Clear cards
-        setDrawnCards([]);
-        setSelectedCards([]);
-        setDrawsRemaining(3);
-
-        return deckJson.deckID;
-    }
-
     async function newGame() {
-        await newDeck();
-    }
+        newDeck();
 
-    // Pull numDraw cards via the API.
-    // No check to see if there are enough cards in the deck.
-    // Updates State Variable 'drawnCards' to hold array of cards returned
-    // Decrements State Variable 'Cards Remaining' by numDraw
-    async function drawCards(numDraw) {
-        let deckIDtoUse = deckID;
-        if ( deckIDtoUse === "" ) {
-            deckIDtoUse = await newDeck();
-            console.log(deckID);
-        }
-        console.log('https://cards.soward.net/deck/drawFromDeck/' + deckIDtoUse + "/" + numDraw)
-        const deckResponse = await fetch('https://cards.soward.net/deck/drawFromDeck/' + deckIDtoUse + "/" + numDraw);
-        if (!deckResponse.ok) {
-            throw new Error("API Error while fetching cards: " + deckResponse.error);
-        }
-        const cardsJson = await deckResponse.json();
-        if ( cardsJson.success === false ) {
-            alert(cardsJson.message);
-            return;
-        }
-        setDrawnCards(cardsJson.cards);
-        localStorage.setItem("cardsApiDrawnCards", JSON.stringify(cardsJson.cards));
-
-        let newCardsRemaining = cardsRemaining - numDraw;
-        setCardsRemaining(newCardsRemaining);
-
-        setDrawsRemaining(drawsRemaining - 1);
+        // reset values
+        resetScoreData();
     }
 
     async function selectCard(index) {

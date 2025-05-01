@@ -9,6 +9,7 @@ import {
     Header,
 } from "semantic-ui-react";
 import useGameContext from "../GameContext";
+import CardList from "./CardList"
 
 function ScoreCategory({title, description}) {
     const {
@@ -20,6 +21,7 @@ function ScoreCategory({title, description}) {
         scoreData, updateScore, updateCards,
         categoryFunctions,
         newDeck, getDeckStatus, deleteDeck, drawCards,
+        totalScore, setTotalScore
 
     } = useGameContext();
 
@@ -47,15 +49,15 @@ function ScoreCategory({title, description}) {
         // update state variables
         updateScore(title, score);
         updateCards(title, sorted);
+        setTotalScore(totalScore + score);
 
         console.log(`Condition evaluated to ${passesTest} for "${title}"`)
         console.log(`Updated "${title}" score to ${score}`);
         console.log(`Context variable: ${scoreData[title].score}`)
 
         // get a new deck and reset all necessary vars
-        deleteDeck();
         newDeck();
-        drawCards(7);
+        //drawCards(7, true);
     }
 
     return (
@@ -67,12 +69,14 @@ function ScoreCategory({title, description}) {
                         <i>{description}</i>
                     </GridColumn>
                     <GridColumn width={4} textAlign="center">
-                        <Button inverted floated="right" size="mini" onClick={recordScore} disabled={selectedCards.length === 5 ? (false) : (true)}>Record Score</Button>
+                        <Button inverted floated="right" size="mini" onClick={recordScore} disabled={selectedCards.length === 5 && scoreData[title].cards.length === 0 ? (false) : (true)}>Record Score</Button>
                         <Header as="h1" inverted>{scoreData[title].score}</Header>
                     </GridColumn>
                 </GridRow>
                 <GridRow color="blue">
-                    <GridColumn width={16}></GridColumn>
+                    <GridColumn width={16}>
+                        { scoreData[title].cards.length > 0 ? (<CardList cards={scoreData[title].cards} componentSize={"tiny"}/>) : (<></>)}
+                    </GridColumn>
                 </GridRow>
             </Grid>
             <Divider fitted></Divider>

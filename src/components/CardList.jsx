@@ -6,7 +6,7 @@ import {
 } from "semantic-ui-react";
 import useGameContext from "../GameContext";
 
-function CardList({cards, clickFunction=undefined}) {
+function CardList({cards, clickFunction=undefined, componentSize="large"}) {
     const {
         deckID, setDeckID,
         drawsRemaining, setDrawsRemaining,
@@ -19,7 +19,7 @@ function CardList({cards, clickFunction=undefined}) {
     
     return (
         <Segment compact style={{ display: 'flex', justifyContent: 'center' }}>
-            <List horizontal size="large">
+            <List horizontal size={componentSize}>
                 {cards.map((card, index) => (
                     <ListItem key={index}>
                         <Image height="150px"
