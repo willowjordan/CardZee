@@ -1,6 +1,7 @@
-// utils/checkCategory.jsx
-// functions for checking whether a group of cards fits a category
-// each function returns true or false
+// utils/categoryFuncs.jsx
+// functions for checking whether a group of cards fits a category and adding up scores
+// each check function returns true or false
+// the score function returns the total score
 // each function assumes "cards" is a sorted array of 5 json card objects
 
 export function checkFourOfAKind(cards) {
@@ -66,6 +67,10 @@ export function checkFlush(cards) {
     return true;
 }
 
-export function checkChance(cards) {
-    return true;
+export function sumCards(cards) {
+    let sum = 0;
+    for (const card of cards) {
+        sum += card.intValue
+    }
+    return sum;
 }

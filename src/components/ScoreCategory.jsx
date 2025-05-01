@@ -1,3 +1,5 @@
+// components/ScoreCategory.jsx
+
 import {
     Divider,
     Grid,
@@ -6,17 +8,9 @@ import {
     Button,
     Header,
 } from "semantic-ui-react";
-import useGameState from "../hooks/useGameState";
-import {
-    checkFourOfAKind,
-    checkThreeOfAKind,
-    checkFullHouse,
-    checkTwoPair,
-    checkFlush,
-    checkChance,
-} from "../utils/checkCategory";
+import useGameContext from "../GameContext";
 
-function ScoreCategory({ title, description}) {
+function ScoreCategory({title, description}) {
     const {
         deckID, setDeckID,
         drawsRemaining, setDrawsRemaining,
@@ -24,9 +18,12 @@ function ScoreCategory({ title, description}) {
         drawnCards, setDrawnCards,
         selectedCards, setSelectedCards,
         scoreData, updateScore, updateCards,
-    } = useGameState();
+        categoryFunctions,
+        newDeck, getDeckStatus, deleteDeck, drawCards,
 
-    async function handleClick() {
+    } = useGameContext();
+
+    async function recordScore() {
         // make sure selected cards is the right size (just in case)
         if (selectedCards.length != 5) {
             console.error("Selected Cards is the wrong size (should be 5)");
@@ -36,27 +33,29 @@ function ScoreCategory({ title, description}) {
         // shallow copy and sort selected cards
         const sorted = [...selectedCards].sort((a, b) => a.intValue - b.intValue);
 
-        // call checking functions
+        // call checking  and score functions
+        let score = 0;
         let passesTest = false;
-        if (title === "Four of a kind") {
-            passesTest = checkFourOfAKind(sorted)
-        } else if (title === "Three of a kind") {
-            passesTest = checkThreeOfAKind(sorted)
-        } else if (title === "Full house") {
-            passesTest = checkFullHouse(sorted)
-        } else if (title === "Two pair") {
-            passesTest = checkTwoPair(sorted)
-        } else if (title === "Flush") {
-            passesTest = checkFlush(sorted)
-        } else if (title === "Chance") {
-            passesTest = checkChance(sorted)
-        } else {
-            console.warn("Unrecognized category " + title);
+        try {
+            passesTest = categoryFunctions[title].checkValidity(sorted);
+            if (passesTest)
+                score = categoryFunctions[title].calculateScore(sorted);
+        } catch (error) {
+            console.warn(error.message)
         }
 
-        // call score calculation function
-        // TODO: create actual functions for this
-        score = sum(...sorted.intValue)
+        // update state variables
+        updateScore(title, score);
+        updateCards(title, sorted);
+
+        console.log(`Condition evaluated to ${passesTest} for "${title}"`)
+        console.log(`Updated "${title}" score to ${score}`);
+        console.log(`Context variable: ${scoreData[title].score}`)
+
+        // get a new deck and reset all necessary vars
+        deleteDeck();
+        newDeck();
+        drawCards(7);
     }
 
     return (
@@ -68,8 +67,8 @@ function ScoreCategory({ title, description}) {
                         <i>{description}</i>
                     </GridColumn>
                     <GridColumn width={4} textAlign="center">
-                        <Button inverted floated="right" size="mini" onClick={handleClick()}>Record Score</Button>
-                        <Header as="h1" inverted>{score}</Header>
+                        <Button inverted floated="right" size="mini" onClick={recordScore} disabled={selectedCards.length === 5 ? (false) : (true)}>Record Score</Button>
+                        <Header as="h1" inverted>{scoreData[title].score}</Header>
                     </GridColumn>
                 </GridRow>
                 <GridRow color="blue">

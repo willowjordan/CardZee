@@ -37,6 +37,11 @@ export function useDeckAPI() {
         localStorage.setItem("cardsApiDeckID", JSON.stringify(deckJson.deckID));
         // We could rely on useEffect here, but we can save an API call by setting it directly.
         setCardsRemaining(deckJson.cardsRemaining);
+
+        // Clear cards
+        setDrawnCards(undefined);
+        setSelectedCards(undefined);
+        setDrawsRemaining(3);
     }
 
     // For a given deckID, we can make sure it still exists and get the number of cards remaing.
@@ -116,3 +121,5 @@ export function useDeckAPI() {
         drawCards,
     };
 }
+
+export default useDeckAPI();

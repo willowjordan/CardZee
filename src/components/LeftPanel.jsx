@@ -5,8 +5,7 @@ import {
     Button,
     Label,
 } from "semantic-ui-react";
-import useGameState from "../hooks/useGameState";
-import useDeckAPI from "../hooks/useDeckAPI";
+import useGameContext from "../GameContext";
 import CardList from "./CardList";
 
 function LeftPanel() {
@@ -17,26 +16,104 @@ function LeftPanel() {
         drawnCards, setDrawnCards,
         selectedCards, setSelectedCards,
         scoreData, updateScore, updateCards,
-    } = useGameState();
-    const {
-        newDeck,
-        getDeckStatus,
-        deleteDeck,
-        drawCards,
-    } = useDeckAPI();
+    } = useGameContext();
+
+    async function newDeck() {
+        const deckResponse = await fetch('https://cards.soward.net/deck/newDeck');
+        // Trap an error at the HTTP level.
+        if (!deckResponse.ok) {
+            alert('Error fetching new deck: ' + deckResponse.error);
+            return;
+        }
+        let deckJson = "";
+        // Use 'try' to catch errors in the decoded or from the API itself.
+        try {
+            deckJson = await deckResponse.json();
+        } catch (error) {
+            alert(`Error fetching Deck: ${error}<br>${deckResponse.body}`);
+            return;
+        }
+        if (deckJson.success != true) {
+            alert(`Error fetching Deck. Status: ${deckJson.status} Message: ${deckJson.message}`);
+            return;
+        }
+        setDeckID(deckJson.deckID);
+        localStorage.setItem("cardsApiDeckID", JSON.stringify(deckJson.deckID));
+        // We could rely on useEffect here, but we can save an API call by setting it directly.
+        setCardsRemaining(deckJson.cardsRemaining);
+
+        // Clear cards
+        setDrawnCards([]);
+        setSelectedCards([]);
+        setDrawsRemaining(3);
+
+        return deckJson.deckID;
+    }
 
     async function newGame() {
-        // TODO: reset all scores
-        
+        await newDeck();
+    }
 
-        newDeck();
+    // Pull numDraw cards via the API.
+    // No check to see if there are enough cards in the deck.
+    // Updates State Variable 'drawnCards' to hold array of cards returned
+    // Decrements State Variable 'Cards Remaining' by numDraw
+    async function drawCards(numDraw) {
+        let deckIDtoUse = deckID;
+        if ( deckIDtoUse === "" ) {
+            deckIDtoUse = await newDeck();
+            console.log(deckID);
+        }
+        console.log('https://cards.soward.net/deck/drawFromDeck/' + deckIDtoUse + "/" + numDraw)
+        const deckResponse = await fetch('https://cards.soward.net/deck/drawFromDeck/' + deckIDtoUse + "/" + numDraw);
+        if (!deckResponse.ok) {
+            throw new Error("API Error while fetching cards: " + deckResponse.error);
+        }
+        const cardsJson = await deckResponse.json();
+        if ( cardsJson.success === false ) {
+            alert(cardsJson.message);
+            return;
+        }
+        setDrawnCards(cardsJson.cards);
+        localStorage.setItem("cardsApiDrawnCards", JSON.stringify(cardsJson.cards));
+
+        let newCardsRemaining = cardsRemaining - numDraw;
+        setCardsRemaining(newCardsRemaining);
+
+        setDrawsRemaining(drawsRemaining - 1);
+    }
+
+    async function selectCard(index) {
+        if (selectedCards.length >= 5) return; // Don't allow user to select more than 5 cards
+        const cardToMove = drawnCards[index]; // Get card
+        const updatedDrawn = [
+            ...drawnCards.slice(0, index),
+            ...drawnCards.slice(index + 1)
+        ]; // Remove from drawnCards
+        const updatedSelected = [...selectedCards, cardToMove]; // Add to selectedCards
+        // Update both states
+        setDrawnCards(updatedDrawn);
+        setSelectedCards(updatedSelected);
+    }
+
+    async function deselectCard(index) {
+        const cardToMove = selectedCards[index]; // Get card
+        const updatedSelected = [
+            ...selectedCards.slice(0, index),
+            ...selectedCards.slice(index + 1)
+        ]; // Remove from selectedCards
+        const updatedDrawn = [...drawnCards, cardToMove]; // Add to drawnCards
+
+        // Update both states
+        setDrawnCards(updatedDrawn);
+        setSelectedCards(updatedSelected);
     }
 
     return (
         <Segment>
             <Label attached="top" size="big">
                 <Header as='h2' floated="left">Rules of Play</Header>
-                <Button floated="right" secondary onClick={newGame()}>New Game</Button>
+                <Button floated="right" secondary onClick={newGame}>New Game</Button>
             </Label>
             <Header as='h1'></Header>
             <Segment basic>
@@ -54,25 +131,17 @@ function LeftPanel() {
                     <Header as='h3' textAlign="center">Draws left: {drawsRemaining}</Header>
                 </Segment>
                 <Segment color="blue" inverted>
-                    <Button secondary floated="right" onClick={drawCards(drawnCards.length)} disabled={drawsRemaining > 0 ? (false) : (true)}>Draw Cards</Button>
+                    <Button secondary floated="right" onClick={() => drawCards((selectedCards.length === 0) ? (7) : (drawnCards.length))} disabled={drawsRemaining > 0 ? (false) : (true)}>Draw Cards</Button>
                 </Segment>
             </SegmentGroup>
-            { drawnCards ? (<></>) : (
-                <Segment>
-                    <CardList cards={drawnCards}/>
-                </Segment>
-            )}
+            { drawnCards.length > 0 ? (<CardList cards={drawnCards} clickFunction={selectCard}/>) : (<></>)}
             {/* Selected cards panel */}
             <SegmentGroup horizontal>
                 <Segment color="blue" inverted>
                     <Header as='h3' floated="left">Selected Cards</Header>
                 </Segment>
             </SegmentGroup>
-            { selectedCards ? (<></>) : (
-                <Segment>
-                    <CardList cards={selectedCards}/>
-                </Segment>
-            )}
+            { selectedCards.length > 0 ? (<CardList cards={selectedCards} clickFunction={deselectCard}/>) : (<></>)}
         </Segment>
     );
 }

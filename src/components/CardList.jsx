@@ -1,14 +1,31 @@
 import {
     Segment,
+    List,
+    ListItem,
+    Image,
 } from "semantic-ui-react";
+import useGameContext from "../GameContext";
 
-function CardList({ cards }) {
+function CardList({cards, clickFunction=undefined}) {
+    const {
+        deckID, setDeckID,
+        drawsRemaining, setDrawsRemaining,
+        cardsRemaining, setCardsRemaining,
+        drawnCards, setDrawnCards,
+        selectedCards, setSelectedCards,
+        scoreData, updateScore, updateCards,
+        newDeck, getDeckStatus, deleteDeck, drawCards,
+    } = useGameContext();
+    
     return (
-        <Segment>
-            <List>
+        <Segment compact style={{ display: 'flex', justifyContent: 'center' }}>
+            <List horizontal size="large">
                 {cards.map((card, index) => (
-                    <ListItem>
-                        <Image height="150px" alt={`Card: ${card.alt}`} src={card.src}/>
+                    <ListItem key={index}>
+                        <Image height="150px"
+                               alt={`Card: ${card.value} of ${card.suitName}`}
+                               src={card.svgImage}
+                               onClick={() => clickFunction(index)}/>
                     </ListItem>
                 ))}
             </List>

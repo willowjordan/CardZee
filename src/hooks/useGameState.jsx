@@ -3,6 +3,14 @@
 
 import { useState, useEffect } from 'react';
 import { checkLocalStorage } from '../utils/localStorage';
+import {
+    checkFourOfAKind,
+    checkThreeOfAKind,
+    checkFullHouse,
+    checkTwoPair,
+    checkFlush,
+    sumCards,
+} from "../utils/checkCategory";
 
 const initialScores = {
     "Four of a Kind": { score: 0, cards: [] },
@@ -13,6 +21,15 @@ const initialScores = {
     "Chance": { score: 0, cards: [] },
 };
 
+const categoryFunctionsDict = {
+    "Four of a Kind": { check: checkFourOfAKind, calculateScore: sumCards },
+    "Three of a Kind": { check: checkThreeOfAKind, calculateScore: sumCards },
+    "Full House": { check: checkFullHouse, calculateScore: (cards) => 50 },
+    "Two Pair": { check: checkTwoPair, calculateScore: sumCards },
+    "Flush": { check: checkFlush, calculateScore: sumCards },
+    "Chance": { check: (cards) => true, calculateScore: sumCards },
+};
+
 export function useGameState() {
     // State Variables.
     const [deckID, setDeckID] = useState( checkLocalStorage("cardsApiDeckID","") );
@@ -21,6 +38,7 @@ export function useGameState() {
     const [drawnCards, setDrawnCards] = useState(undefined);
     const [selectedCards, setSelectedCards] = useState(undefined);
     const [scoreData, setScoreData] = useState(initialScores);
+    const [categoryFunctions, setCategoryFunctions] = useState(categoryFunctionsDict);
 
     // Save to localStorage when deckID changes
     useEffect(() => {
@@ -55,6 +73,9 @@ export function useGameState() {
         cardsRemaining, setCardsRemaining,
         drawnCards, setDrawnCards,
         selectedCards, setSelectedCards,
-        scoreData, updateScore, updateCards
+        scoreData, updateScore, updateCards,
+        categoryFunctions, setCategoryFunctions,
     };
 }
+
+export default useGameState();
